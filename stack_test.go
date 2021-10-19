@@ -37,11 +37,11 @@ func TestFrameFormat(t *testing.T) {
 	}, {
 		0,
 		"%s",
-		"unknown",
+		unknown,
 	}, {
 		0,
 		"%+s",
-		"unknown",
+		unknown,
 	}, {
 		initpc,
 		"%d",

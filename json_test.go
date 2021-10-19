@@ -37,7 +37,7 @@ func TestFrameMarshalJSON(t *testing.T) {
 		`^"github\.com/pkg/errors\.init(\.ializers)? .+/github\.com/pkg/errors/stack_test.go:\d+"$`,
 	}, {
 		0,
-		`^"unknown"$`,
+		`^"` + unknown + `"$`,
 	}}
 	for i, tt := range tests {
 		got, err := json.Marshal(tt.Frame)
