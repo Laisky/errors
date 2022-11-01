@@ -53,34 +53,42 @@ func (f Frame) name() string {
 
 // Format formats the frame according to the fmt.Formatter interface.
 //
-//    %s    source file
-//    %d    source line
-//    %n    function name
-//    %v    equivalent to %s:%d
+//	%s    source file
+//	%d    source line
+//	%n    function name
+//	%v    equivalent to %s:%d
 //
 // Format accepts flags that alter the printing of some verbs, as follows:
 //
-//    %+s   function name and path of source file relative to the compile time
-//          GOPATH separated by \n\t (<funcname>\n\t<path>)
-//    %+v   equivalent to %+s:%d
+//	%+s   function name and path of source file relative to the compile time
+//	      GOPATH separated by \n\t (<funcname>\n\t<path>)
+//	%+v   equivalent to %+s:%d
 func (f Frame) Format(s fmt.State, verb rune) {
+	var err error
 	switch verb {
 	case 's':
 		switch {
 		case s.Flag('+'):
-			io.WriteString(s, f.name())
-			io.WriteString(s, "\n\t")
-			io.WriteString(s, f.file())
+			_, err = io.WriteString(s, f.name())
+			panicErr(err)
+			_, err = io.WriteString(s, "\n\t")
+			panicErr(err)
+			_, err = io.WriteString(s, f.file())
+			panicErr(err)
 		default:
-			io.WriteString(s, path.Base(f.file()))
+			_, err = io.WriteString(s, path.Base(f.file()))
+			panicErr(err)
 		}
 	case 'd':
-		io.WriteString(s, strconv.Itoa(f.line()))
+		_, err = io.WriteString(s, strconv.Itoa(f.line()))
+		panicErr(err)
 	case 'n':
-		io.WriteString(s, funcname(f.name()))
+		_, err = io.WriteString(s, funcname(f.name()))
+		panicErr(err)
 	case 'v':
 		f.Format(s, 's')
-		io.WriteString(s, ":")
+		_, err = io.WriteString(s, ":")
+		panicErr(err)
 		f.Format(s, 'd')
 	}
 }
@@ -100,19 +108,20 @@ type StackTrace []Frame
 
 // Format formats the stack of Frames according to the fmt.Formatter interface.
 //
-//    %s	lists source files for each Frame in the stack
-//    %v	lists the source file and line number for each Frame in the stack
+//	%s	lists source files for each Frame in the stack
+//	%v	lists the source file and line number for each Frame in the stack
 //
 // Format accepts flags that alter the printing of some verbs, as follows:
 //
-//    %+v   Prints filename, function, and line number for each Frame in the stack.
+//	%+v   Prints filename, function, and line number for each Frame in the stack.
 func (st StackTrace) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		switch {
 		case s.Flag('+'):
 			for _, f := range st {
-				io.WriteString(s, "\n")
+				_, err := io.WriteString(s, "\n")
+				panicErr(err)
 				f.Format(s, verb)
 			}
 		case s.Flag('#'):
@@ -128,14 +137,17 @@ func (st StackTrace) Format(s fmt.State, verb rune) {
 // formatSlice will format this StackTrace into the given buffer as a slice of
 // Frame, only valid when called with '%s' or '%v'.
 func (st StackTrace) formatSlice(s fmt.State, verb rune) {
-	io.WriteString(s, "[")
+	_, err := io.WriteString(s, "[")
+	panicErr(err)
 	for i, f := range st {
 		if i > 0 {
-			io.WriteString(s, " ")
+			_, err := io.WriteString(s, " ")
+			panicErr(err)
 		}
 		f.Format(s, verb)
 	}
-	io.WriteString(s, "]")
+	_, err = io.WriteString(s, "]")
+	panicErr(err)
 }
 
 // stack represents a stack of program counters.
@@ -162,10 +174,10 @@ func (s *stack) StackTrace() StackTrace {
 	return f
 }
 
-func callers() *stack {
+func callers(skip int) *stack {
 	const depth = 32
 	var pcs [depth]uintptr
-	n := runtime.Callers(int(GetSkipCallers()), pcs[:])
+	n := runtime.Callers(skip, pcs[:])
 	var st stack = pcs[0:n]
 	return &st
 }

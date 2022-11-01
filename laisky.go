@@ -1,8 +1,18 @@
 package errors
 
-import "sync/atomic"
+import (
+	"fmt"
+	"log"
+	"sync/atomic"
+)
 
 var skipCallers int32 = 3
+
+func panicErr(err error) {
+	if err != nil {
+		log.Panicf("%+v", err)
+	}
+}
 
 // SetSkipCallers set depth of skip callers
 func SetSkipCallers(skip int) {
@@ -12,4 +22,34 @@ func SetSkipCallers(skip int) {
 // GetSkipCallers get depth of skip callers
 func GetSkipCallers() int {
 	return int(atomic.LoadInt32(&skipCallers))
+}
+
+// Wrap same as Wrap, but you can skip more stacks
+func WrapWithSkip(additionalSkip int, err error, message string) error {
+	if err == nil {
+		return nil
+	}
+	err = &withMessage{
+		cause: err,
+		msg:   message,
+	}
+	return &withStack{
+		err,
+		callers(GetSkipCallers() + additionalSkip),
+	}
+}
+
+// Wrapf same as Wrapf, but you can skip more stacks
+func WrapfWithSkip(additionalSkip int, err error, format string, args ...interface{}) error {
+	if err == nil {
+		return nil
+	}
+	err = &withMessage{
+		cause: err,
+		msg:   fmt.Sprintf(format, args...),
+	}
+	return &withStack{
+		err,
+		callers(GetSkipCallers() + additionalSkip),
+	}
 }
