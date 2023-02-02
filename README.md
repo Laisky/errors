@@ -11,6 +11,8 @@
 
 1. `Join`
 2. `Is`
+3. `UnWrap`
+4. `ErrorfWithSkip`
 
 ### v1
 
