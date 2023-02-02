@@ -1,8 +1,8 @@
 arch:
   - amd64
-  
+
 language: go
-go_import_path: github.com/pkg/errors
+go_import_path: github.com/Laisky/errors
 go:
   - 1.14
   - 1.15
