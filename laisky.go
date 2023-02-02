@@ -24,7 +24,7 @@ func GetSkipCallers() int {
 	return int(atomic.LoadInt32(&skipCallers))
 }
 
-// WithStackWithSkip like WithStackm but you can skip custom stacks
+// WithStackWithSkip like WithStackm but you can skip arbitrary stacks
 func WithStackWithSkip(skip int, err error) error {
 	if err == nil {
 		return nil
@@ -36,7 +36,7 @@ func WithStackWithSkip(skip int, err error) error {
 	}
 }
 
-// WrapWithSkip same as Wrap, but you can skip custom stacks
+// WrapWithSkip same as Wrap, but you can skip arbitrary stacks
 func WrapWithSkip(skip int, err error, message string) error {
 	if err == nil {
 		return nil
@@ -51,7 +51,7 @@ func WrapWithSkip(skip int, err error, message string) error {
 	}
 }
 
-// WrapfWithSkip same as Wrapf, but you can skip custom stacks
+// WrapfWithSkip same as Wrapf, but you can skip arbitrary stacks
 func WrapfWithSkip(skip int, err error, format string, args ...interface{}) error {
 	if err == nil {
 		return nil
@@ -63,5 +63,13 @@ func WrapfWithSkip(skip int, err error, format string, args ...interface{}) erro
 	return &withStack{
 		err,
 		callers(skip),
+	}
+}
+
+// ErrorfWithStack same as Errorf, but you can skip arbitrary stacks
+func ErrorfWithStack(skip int, format string, args ...interface{}) error {
+	return &fundamental{
+		msg:   fmt.Sprintf(format, args...),
+		stack: callers(skip),
 	}
 }

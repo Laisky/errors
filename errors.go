@@ -183,6 +183,10 @@ func (w *withStack) Format(s fmt.State, verb rune) {
 	}
 }
 
+func Unwrap(err error) {
+	errors.Unwrap(err)
+}
+
 // Join returns an error that wraps the given errors.
 // Any nil error values are discarded.
 // Join returns nil if errs contains no non-nil values.
